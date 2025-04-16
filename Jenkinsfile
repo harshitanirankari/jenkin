@@ -1,15 +1,13 @@
 pipeline {
   agent any
-  
   environment {
-    // Load environment variables from .env file
+    // Default values (can be overridden by .env file)
     IMAGE_NAME = ''
     CONTAINER_PORT = ''
     DEPLOY_PORT = ''
     REPO_URL = ''
     REPO_BRANCH = ''
   }
-  
   stages {
     stage('Load Environment Variables') {
       steps {
@@ -20,27 +18,25 @@ pipeline {
             if (line.trim() && !line.startsWith('#')) {
               def parts = line.split('=')
               if (parts.size() == 2) {
-                env[parts[0].trim()] = parts[1].trim()
+                // Fix: Use env.setProperty instead of direct array access
+                env.setProperty(parts[0].trim(), parts[1].trim())
               }
             }
           }
         }
       }
     }
-    
     stage('Checkout') {
       steps {
         git branch: "${env.REPO_BRANCH}", url: "${env.REPO_URL}"
       }
     }
-    
     stage('Build') {
       steps {
         echo "Building Docker image..."
         sh "docker build -t ${env.IMAGE_NAME} ."
       }
     }
-    
     stage('Test') {
       steps {
         echo "Running tests..."
@@ -48,7 +44,6 @@ pipeline {
         sh "./tests/test.sh"
       }
     }
-    
     stage('Deploy') {
       steps {
         echo "Deploying the website..."
@@ -56,8 +51,18 @@ pipeline {
         sh "docker run -d --name website -p ${env.DEPLOY_PORT}:${env.CONTAINER_PORT} ${env.IMAGE_NAME}"
       }
     }
+    stage('Deploy to Render') {
+      steps {
+        withCredentials([string(credentialsId: 'render-api-key', variable: 'RENDER_API_KEY')]) {
+          script {
+            def serviceId = "srv-cvvtqi49c44c73f9uud0"
+            def deployUrl = "https://api.render.com/deploy/${serviceId}?key=${RENDER_API_KEY}"
+            sh "curl -X POST ${deployUrl}"
+          }
+        }
+      }
+    }
   }
-  
   post {
     success {
       echo "Pipeline succeeded."
