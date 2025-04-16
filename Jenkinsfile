@@ -57,13 +57,7 @@ pipeline {
 
     stage('Deploy to Render') {
       steps {
-        withCredentials([string(credentialsId: 'render-api-key', variable: 'RENDER_API_KEY')]) {
-          script {
-            def serviceId = "srv-cvvtqi49c44c73f9uud0"
-            def deployUrl = "https://api.render.com/deploy/${serviceId}?key=${RENDER_API_KEY}"
-            bat "curl -X POST ${deployUrl}"
-          }
-        }
+        bat 'curl -X POST https://api.render.com/deploy/srv-cvvtqi49c44c73f9uud0?key=8XmRVPBC1fs'
       }
     }
   }
