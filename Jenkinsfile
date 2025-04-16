@@ -43,7 +43,7 @@ pipeline {
     stage('Test') {
       steps {
         echo "Running tests..."
-        bat 'if exist tests\\test.bat (call tests\\test.bat) else (echo No test script found)'
+        bat 'if exist tests\test.bat (call tests\test.bat) else (echo No test script found)'
       }
     }
 
