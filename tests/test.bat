@@ -6,7 +6,7 @@ REM Allow some time for the container to start.
 timeout /t 5 > NUL
 
 REM Fetch the response from the local server.
-curl -s http://localhost:8081 > response.txt
+curl http://localhost:8081 > response.txt 2>NUL
 
 REM Search for the expected text.
 findstr /C:"welcome to my test website" response.txt > NUL
