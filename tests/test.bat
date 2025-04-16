@@ -1,20 +1,25 @@
-#!/bin/bash
-# Run the container in detached mode with a published port.
-container_id=$(docker run -d -p 8080:80 my-test-website:latest)
+@echo off
+REM Run the container in detached mode with a published port.
+FOR /F %%i IN ('docker run -d -p 8080:80 my-test-website:latest') DO SET container_id=%%i
 
-# Allow some time for the container to start.
-sleep 5
+REM Allow some time for the container to start.
+timeout /t 5 > NUL
 
-# Check for the expected text in the homepage.
-response=$(curl -s http://localhost:8080)
-if [[ "$response" == *"welcome to my test website"* ]]; then
-  echo "Test passed: Site content is correct."
-  ret=0
-else
-  echo "Test failed: Site content is not correct."
-  ret=1
-fi
+REM Fetch the response from the local server.
+curl -s http://localhost:8080 > response.txt
 
-# Stop the container.
-docker stop $container_id
-exit $ret
+REM Search for the expected text.
+findstr /C:"welcome to my test website" response.txt > NUL
+
+IF %ERRORLEVEL% EQU 0 (
+    echo Test passed: Site content is correct.
+    SET ret=0
+) ELSE (
+    echo Test failed: Site content is not correct.
+    SET ret=1
+)
+
+REM Stop the container.
+docker stop %container_id% > NUL
+
+exit /b %ret%
