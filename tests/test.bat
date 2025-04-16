@@ -1,6 +1,6 @@
 @echo off
 REM Run the container in detached mode with a published port.
-FOR /F %%i IN ('docker run -d -p 8080:80 jenkins:latest') DO SET container_id=%%i
+FOR /F %%i IN ('docker run -d -p 8080:80 jenkin:latest') DO SET container_id=%%i
 
 REM Allow some time for the container to start.
 timeout /t 5 > NUL
