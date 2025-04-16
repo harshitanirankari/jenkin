@@ -2,8 +2,6 @@ pipeline {
 
   agent any
 
-  // Define default values directly in environment block
-
   environment {
 
     IMAGE_NAME = ''
@@ -12,23 +10,13 @@ pipeline {
 
     DEPLOY_PORT = ''
 
-    // Remove these variables from here since we'll handle them differently
-
-    // REPO_URL = ''
-
-    // REPO_BRANCH = ''
-
   }
 
   stages {
 
-    // First stage - checkout the code that contains the .env file
-
     stage('Initial Checkout') {
 
       steps {
-
-        // Use the scm variable which contains the details from the Jenkins job configuration
 
         checkout scm
 
@@ -41,8 +29,6 @@ pipeline {
       steps {
 
         script {
-
-          // Read the .env file and set environment variables
 
           def envFile = fileExists('.env') ? readFile('.env') : ''
 
@@ -63,8 +49,6 @@ pipeline {
                   def key = parts[0].trim()
 
                   def value = parts[1].trim()
-
-                  // Use env.setProperty instead of array syntax
 
                   env.setProperty(key, value)
 
@@ -94,13 +78,33 @@ pipeline {
 
         script {
 
-          // Only execute this stage if REPO_URL and REPO_BRANCH are set
-
           if (env.REPO_URL?.trim() && env.REPO_BRANCH?.trim()) {
 
             echo "Checking out from ${env.REPO_URL}, branch: ${env.REPO_BRANCH}"
 
-            git branch: "${env.REPO_BRANCH}", url: "${env.REPO_URL}"
+            // Use the same credential ID used in the initial checkout
+
+            checkout([
+
+              $class: 'GitSCM',
+
+              branches: [[name: "*/${env.REPO_BRANCH}"]],
+
+              doGenerateSubmoduleConfigurations: false,
+
+              extensions: [],
+
+              submoduleCfg: [],
+
+              userRemoteConfigs: [[
+
+                credentialsId: 'github-credentials-2',  // Important: Use your GitHub credentials ID here
+
+                url: "${env.REPO_URL}"
+
+              ]]
+
+            ])
 
           } else {
 
