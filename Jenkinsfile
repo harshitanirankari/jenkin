@@ -1,8 +1,6 @@
 pipeline {
   agent any
-  triggers{
-    githubPush()
-  }
+  
   environment {
     IMAGE_NAME = 'jenkin:latest'
     CONTAINER_PORT = '8080'
